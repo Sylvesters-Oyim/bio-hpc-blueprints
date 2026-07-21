@@ -1,0 +1,17 @@
+---
+# Handlers for the slurm role.
+# NOTE: added during repo assembly — the slurm task file notifies "restart slurmctld"
+# and "restart slurmd" but no handler file was present. Standard implementation below.
+#
+# Author: Sylvesters Ochieng Oyim, Rhodes University
+
+- name: restart slurmctld
+  ansible.builtin.systemd:
+    name: slurmctld
+    state: restarted
+  when: inventory_hostname == control_machine
+
+- name: restart slurmd
+  ansible.builtin.systemd:
+    name: slurmd
+    state: restarted

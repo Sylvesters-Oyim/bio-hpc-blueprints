@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+.AppleDouble
+.Spotlight-V100
+.Trashes
+
+# Ansible
+*.retry
+*.log
+
+# Editor / misc
+*~
+*.swp
+.vscode/
+.idea/

@@ -1,0 +1,29 @@
+---
+# Cluster-wide variables shared by every role.
+#
+# Author: Sylvesters Ochieng Oyim, Rhodes University
+
+# ---- Slurm: ONE pinned version, source-built on every node ----
+# Why source: Jaguar is Ubuntu 24.04 (older Slurm) and Lynx is 26.04 (newer Slurm).
+# Distro packages would give the compute node a NEWER Slurm than the controller,
+# which Slurm forbids. Building the same version everywhere makes them speak one protocol.
+# Verify the current stable at https://www.schedmd.com/downloads/ and bump if needed.
+slurm_version: "24.11.5"
+slurm_prefix: "/opt/slurm/{{ slurm_version }}"
+slurm_tarball_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
+
+cluster_name: "biolab"
+control_machine: "jaguar"
+
+# ---- Identity ----
+# NFS trusts UID NUMBERS, not names. Slurm runs a job on the compute node under the
+# submitter's UID. So clusteradmin MUST have the same UID on every node.
+# Jaguar's clusteradmin is 1001 (and holds all the data) -> align everyone to 1001.
+target_admin_uid: 1001
+target_admin_gid: 1001
+
+# ---- The 'slurm' service account: also must share a UID across nodes ----
+# (slurmctld authenticates the SlurmUser by UID via munge.) We pin it explicitly.
+slurm_user: "slurm"
+slurm_uid: 981
+slurm_gid: 981
