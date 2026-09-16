@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PBS 101 for CHPC</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+<style>
+:root{
+  --bg:#f7f6f2;--panel:#fffefb;--ink:#1a1d21;--muted:#5f6670;--line:#e3e0d8;--soft:#efece5;
+  --teal:#0f7b6c;--teal-soft:#d7eee9;--blue:#2c5fa8;--amber:#b86e00;--red:#b3261e;--violet:#6a4bb3;
+  --code:#f1efe9;--mono:ui-monospace,"DejaVu Sans Mono","Ubuntu Mono",monospace;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"URW Palladio L",Georgia,serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#101315;--panel:#171b1e;--ink:#e6e9ec;--muted:#98a2ab;--line:#283036;--soft:#1e2428;
+  --teal:#45c2ad;--teal-soft:#123a34;--blue:#7fa8e8;--amber:#f0a44b;--red:#ff8a80;--violet:#b39cf0;--code:#1d2226}}
+:root[data-theme="dark"]{
+  --bg:#101315;--panel:#171b1e;--ink:#e6e9ec;--muted:#98a2ab;--line:#283036;--soft:#1e2428;
+  --teal:#45c2ad;--teal-soft:#123a34;--blue:#7fa8e8;--amber:#f0a44b;--red:#ff8a80;--violet:#b39cf0;--code:#1d2226}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,"Ubuntu","DejaVu Sans",sans-serif}
+a{color:var(--teal)}
+.wrap{display:grid;grid-template-columns:230px minmax(0,1fr);max-width:1240px;margin:auto}
+aside{position:sticky;top:0;height:100vh;overflow:auto;padding:28px 18px;border-right:1px solid var(--line)}
+aside .logo{font-weight:700;font-size:15px;margin-bottom:18px;display:block;color:var(--ink);text-decoration:none}
+aside a.m{display:block;padding:6px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:14px}
+aside a.m:hover,aside a.m.on{background:var(--soft);color:var(--ink)}
+aside .n{display:inline-block;width:22px;color:var(--teal);font-variant-numeric:tabular-nums}
+aside .portal{margin-top:18px;display:block;text-align:center;background:var(--teal);color:var(--bg);border-radius:8px;padding:8px;text-decoration:none;font-weight:600;font-size:14px}
+main{padding:0 40px 120px;min-width:0}
+section{padding-top:56px;max-width:900px}
+h1{font-family:var(--serif);font-size:52px;line-height:1.05;margin:0 0 14px;letter-spacing:-.01em}
+h2{font-family:var(--serif);font-size:34px;line-height:1.15;margin:0 0 8px}
+h3{font-size:19px;margin:34px 0 8px}
+.kicker{color:var(--teal);font-weight:650;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.lead{font-size:19px;color:var(--muted);max-width:720px}
+p{max-width:720px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.stats{display:flex;flex-wrap:wrap;gap:12px;margin:26px 0}
+.stat{flex:1 1 130px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.stat b{display:block;font-size:30px;font-family:var(--serif);font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:13px}
+code{font-family:var(--mono);font-size:.88em;background:var(--code);padding:1px 5px;border-radius:5px}
+pre{font-family:var(--mono);font-size:13.5px;line-height:1.55;background:var(--code);border-radius:10px;padding:14px 16px;overflow:auto;margin:10px 0}
+pre .c{color:var(--muted)} pre .k{color:var(--teal);font-weight:600}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+.callout{border-left:3px solid var(--teal);background:var(--teal-soft);padding:12px 16px;border-radius:0 10px 10px 0;margin:16px 0;max-width:720px}
+.callout.warn{border-color:var(--amber);background:color-mix(in srgb,var(--amber) 12%,transparent)}
+.tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;background:var(--soft);color:var(--muted);margin-right:4px}
+.sci{margin-top:22px}
+.sci-head{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.sci-head h3{margin:0}
+.q{font-weight:600;color:var(--ink)}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}
+.fig figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+svg text{font-family:system-ui,"Ubuntu",sans-serif}
+.viewer{height:360px;position:relative;border-radius:10px;overflow:hidden;background:var(--bg)}
+.steps{counter-reset:s;list-style:none;padding:0;max-width:720px}
+.steps li{counter-increment:s;position:relative;padding:4px 0 10px 40px}
+.steps li::before{content:counter(s);position:absolute;left:0;top:4px;width:26px;height:26px;border-radius:50%;background:var(--teal);color:var(--bg);font-weight:700;font-size:13px;display:grid;place-items:center}
+.see{font-size:14px;color:var(--muted)}
+button,.btn{font:inherit;font-weight:600;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 14px;cursor:pointer}
+button.primary{background:var(--teal);border-color:var(--teal);color:var(--bg)}
+input[type=range]{width:100%;accent-color:var(--teal)}
+.cells{display:grid;grid-template-columns:repeat(22,1fr);gap:4px;margin:14px 0}
+.cells i{aspect-ratio:1;border-radius:3px;background:var(--soft);transition:background .15s}
+.cells i.on{background:var(--teal)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;background:var(--c);vertical-align:-1px}
+.quiz .opt{display:block;width:100%;text-align:left;margin:6px 0;font-weight:500}
+.quiz .opt.right{border-color:var(--teal);background:var(--teal-soft)}
+.quiz .opt.wrong{border-color:var(--red);color:var(--red)}
+.quiz .why{font-size:14px;color:var(--muted);min-height:1.4em}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font-size:13px;padding:4px 8px;border-radius:6px;opacity:0;transition:opacity .1s;z-index:10}
+dl.gloss{display:grid;grid-template-columns:180px 1fr;gap:6px 18px;max-width:820px}
+dl.gloss dt{font-weight:650}dl.gloss dd{margin:0;color:var(--muted)}
+.theme{position:fixed;right:16px;bottom:16px;border-radius:99px;padding:6px 12px;font-size:13px}
+@media (max-width:900px){
+  .wrap{grid-template-columns:1fr}
+  aside{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:14px 16px;display:flex;flex-wrap:wrap;gap:4px}
+  aside .logo{width:100%;margin:0 0 4px}aside .portal{margin:6px 0 0;width:100%}
+  main{padding:0 16px 100px}h1{font-size:38px}h2{font-size:28px}
+  .grid2,.grid3{grid-template-columns:1fr}.cells{grid-template-columns:repeat(11,1fr)}
+  dl.gloss{grid-template-columns:1fr}dl.gloss dd{margin-bottom:8px}
+}
+</style>
+<style>
+.side{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.side pre{margin:0;height:100%}
+.side .lbl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.side .s{color:var(--teal)} .side .p{color:var(--violet)}
+textarea{width:100%;min-height:210px;font-family:var(--mono);font-size:13px;background:var(--code);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;resize:vertical}
+.conv{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.inp{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.inp input{font:inherit;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+@media (max-width:900px){.side,.conv{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<aside>
+  <a class="logo" href="#top">🚀 PBS 101 for CHPC</a>
+  <a class="m" href="#m1"><span class="n">1</span>Same ideas, new words</a>
+  <a class="m" href="#m2"><span class="n">2</span>The job script</a>
+  <a class="m" href="#m3"><span class="n">3</span>Commands</a>
+  <a class="m" href="#m4"><span class="n">4</span>Lengau essentials</a>
+  <a class="m" href="#m5"><span class="n">5</span>Worked conversions</a>
+  <a class="m" href="#m6"><span class="n">6</span>Converter</a>
+  <a class="m" href="#m7"><span class="n">7</span>Pitfalls</a>
+  <a class="m" href="#m8"><span class="n">8</span>Quiz</a>
+  <a class="portal" href="/learn" onclick="if(location.protocol==='file:'){location.href='Cluster 101.html';return false}">← Cluster 101</a>
+</aside>
+
+<main>
+<section id="top">
+  <div class="kicker">Follow-up course · about 30 minutes</div>
+  <h1>PBS 101 for CHPC</h1>
+  <p class="lead">You already run jobs on the lab cluster with <b>Slurm</b>. The CHPC Lengau cluster uses
+  <b>PBS Pro</b>. The ideas are identical – only the words change. This course maps one onto the other
+  so you can move a working lab job to CHPC in minutes.</p>
+  <div class="stats">
+    <div class="stat"><b>Slurm</b><span>lab cluster · <code>sbatch</code></span></div>
+    <div class="stat"><b>PBS Pro</b><span>CHPC Lengau · <code>qsub</code></span></div>
+    <div class="stat"><b>1 line</b><span>you must add on CHPC: <code>#PBS -P</code></span></div>
+  </div>
+  <div class="callout warn"><b>Check before you run.</b> CHPC queue names, limits and module names change over time.
+  The values here are a guide; the source of truth is the CHPC wiki (<code>wiki.chpc.ac.za</code>) and
+  <code>qstat -Q</code> on Lengau.</div>
+</section>
+
+<!-- 1 -->
+<section id="m1">
+  <div class="kicker">Module 1</div>
+  <h2>Same ideas, new words</h2>
+  <p>Both schedulers do the same job: you describe work in a script, it waits in a queue, it runs on compute nodes.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Idea</th><th>Slurm (lab)</th><th>PBS Pro (CHPC)</th></tr></thead>
+    <tbody>
+      <tr><td>Directive line in a script</td><td><code>#SBATCH</code></td><td><code>#PBS</code></td></tr>
+      <tr><td>Group of nodes you submit to</td><td>partition <code>-p batch</code></td><td>queue <code>-q smp</code></td></tr>
+      <tr><td>Resource request</td><td>separate flags: <code>-N -n -c --mem</code></td><td>one line: <code>-l select=…:ncpus=…:mem=…</code></td></tr>
+      <tr><td>Time limit</td><td><code>-t 12:00:00</code></td><td><code>-l walltime=12:00:00</code></td></tr>
+      <tr><td>Who pays for the time</td><td>– (lab cluster is free)</td><td><b>project code</b> <code>-P CBBI1234</code> (required)</td></tr>
+      <tr><td>Many similar tasks</td><td>array <code>--array=1-100</code></td><td>array <code>-J 1-100</code></td></tr>
+      <tr><td>Where the job starts</td><td>the folder you submitted from</td><td><b>your home folder</b> → <code>cd $PBS_O_WORKDIR</code></td></tr>
+    </tbody>
+  </table></div>
+
+  <figure class="fig">
+  <svg viewBox="0 0 860 150" width="100%" role="img" aria-label="Same workflow in both schedulers">
+    <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--muted)"/></marker></defs>
+    <g font-size="13" text-anchor="middle">
+      <text x="10" y="40" text-anchor="start" font-weight="700" fill="var(--teal)">Slurm</text>
+      <rect x="90" y="20" width="160" height="34" rx="17" fill="var(--teal-soft)"/><text x="170" y="42" fill="var(--ink)">sbatch job.sbatch</text>
+      <rect x="310" y="20" width="160" height="34" rx="17" fill="var(--teal-soft)"/><text x="390" y="42" fill="var(--ink)">squeue --me</text>
+      <rect x="530" y="20" width="160" height="34" rx="17" fill="var(--teal-soft)"/><text x="610" y="42" fill="var(--ink)">slurm-123.out</text>
+      <text x="10" y="112" text-anchor="start" font-weight="700" fill="var(--violet)">PBS</text>
+      <rect x="90" y="92" width="160" height="34" rx="17" fill="color-mix(in srgb,var(--violet) 18%,transparent)"/><text x="170" y="114" fill="var(--ink)">qsub job.pbs</text>
+      <rect x="310" y="92" width="160" height="34" rx="17" fill="color-mix(in srgb,var(--violet) 18%,transparent)"/><text x="390" y="114" fill="var(--ink)">qstat -u $USER</text>
+      <rect x="530" y="92" width="160" height="34" rx="17" fill="color-mix(in srgb,var(--violet) 18%,transparent)"/><text x="610" y="114" fill="var(--ink)">job.o123 / job.e123</text>
+      <text x="780" y="42" fill="var(--muted)">submit → watch</text><text x="780" y="60" fill="var(--muted)">→ read output</text>
+    </g>
+    <g stroke="var(--muted)" stroke-width="1.8" marker-end="url(#arr)"><line x1="250" y1="37" x2="307" y2="37"/><line x1="470" y1="37" x2="527" y2="37"/><line x1="250" y1="109" x2="307" y2="109"/><line x1="470" y1="109" x2="527" y2="109"/></g>
+  </svg>
+  </figure>
+</section>
+
+<!-- 2 -->
+<section id="m2">
+  <div class="kicker">Module 2</div>
+  <h2>The job script, side by side</h2>
+  <p>The biggest change is how you ask for CPUs and memory. PBS asks for <b>chunks</b>: “give me N pieces, each with this many CPUs and this much memory”.</p>
+  <div class="side">
+    <div><div class="lbl s">Slurm · lab cluster</div>
+<pre><span class="k">#!/bin/bash</span>
+<span class="k">#SBATCH -J md</span>
+<span class="k">#SBATCH -N 1</span>
+<span class="k">#SBATCH -c 24</span>
+<span class="k">#SBATCH --mem=60G</span>
+<span class="k">#SBATCH -t 24:00:00</span>
+<span class="k">#SBATCH -o logs/%x_%j.out</span>
+
+<span class="c"># starts in the submit folder</span>
+source /shared/apps/sbio/bin/activate
+gmx mdrun -ntomp $SLURM_CPUS_PER_TASK -deffnm md</pre></div>
+    <div><div class="lbl p">PBS Pro · CHPC</div>
+<pre><span class="k">#!/bin/bash</span>
+<span class="k">#PBS -N md</span>
+<span class="c"># project code + queue (no comments at the end of #PBS lines)</span>
+<span class="k">#PBS -P CBBI1234</span>
+<span class="k">#PBS -q smp</span>
+<span class="k">#PBS -l select=1:ncpus=24:mem=60gb</span>
+<span class="k">#PBS -l walltime=24:00:00</span>
+<span class="k">#PBS -j oe</span>
+<span class="k">#PBS -o md.log</span>
+
+cd $PBS_O_WORKDIR          <span class="c"># starts in ~ otherwise!</span>
+module load chpc/BIOMODULES gromacs
+gmx mdrun -ntomp $NCPUS -deffnm md</pre></div>
+  </div>
+
+  <h3>Reading a <code>select</code> line</h3>
+  <pre><span class="k">-l select=2:ncpus=24:mpiprocs=24:mem=100gb</span>
+          │  │         │           └ memory per chunk
+          │  │         └ MPI ranks per chunk (for mpirun)
+          │  └ CPUs per chunk
+          └ number of chunks (≈ nodes)</pre>
+
+  <h3>Directive map</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>What</th><th>Slurm</th><th>PBS Pro</th></tr></thead>
+    <tbody>
+      <tr><td>Job name</td><td><code>-J name</code></td><td><code>-N name</code></td></tr>
+      <tr><td>Nodes × CPUs</td><td><code>-N 2 --ntasks-per-node=24</code></td><td><code>-l select=2:ncpus=24:mpiprocs=24</code></td></tr>
+      <tr><td>Threads for one program</td><td><code>-c 24</code></td><td><code>-l select=1:ncpus=24</code></td></tr>
+      <tr><td>Memory</td><td><code>--mem=60G</code> (per node)</td><td><code>:mem=60gb</code> inside select (per chunk)</td></tr>
+      <tr><td>Time</td><td><code>-t 2-00:00:00</code></td><td><code>-l walltime=48:00:00</code></td></tr>
+      <tr><td>Partition / queue</td><td><code>-p batch</code></td><td><code>-q serial</code></td></tr>
+      <tr><td>Output / error</td><td><code>-o f.out -e f.err</code></td><td><code>-o f.out -e f.err</code> or <code>-j oe</code></td></tr>
+      <tr><td>Array</td><td><code>--array=1-100</code></td><td><code>-J 1-100</code></td></tr>
+      <tr><td>Run after job 123 succeeds</td><td><code>--dependency=afterok:123</code></td><td><code>-W depend=afterok:123</code></td></tr>
+      <tr><td>E-mail</td><td><code>--mail-type=END --mail-user=me@x</code></td><td><code>-m e -M me@x</code></td></tr>
+      <tr><td>GPU</td><td><code>--gres=gpu:1</code></td><td><code>-q gpu_1 -l select=1:ncpus=10:ngpus=1</code></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Environment variables inside a job</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>Meaning</th><th>Slurm</th><th>PBS Pro</th></tr></thead>
+    <tbody>
+      <tr><td>Job ID</td><td><code>$SLURM_JOB_ID</code></td><td><code>$PBS_JOBID</code></td></tr>
+      <tr><td>Array task number</td><td><code>$SLURM_ARRAY_TASK_ID</code></td><td><code>$PBS_ARRAY_INDEX</code></td></tr>
+      <tr><td>Folder you submitted from</td><td><code>$SLURM_SUBMIT_DIR</code></td><td><code>$PBS_O_WORKDIR</code></td></tr>
+      <tr><td>CPUs you got</td><td><code>$SLURM_CPUS_PER_TASK</code></td><td><code>$NCPUS</code> (also sets <code>$OMP_NUM_THREADS</code>)</td></tr>
+      <tr><td>Nodes you got</td><td><code>$SLURM_JOB_NODELIST</code></td><td>file <code>$PBS_NODEFILE</code></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 3 -->
+<section id="m3">
+  <div class="kicker">Module 3</div>
+  <h2>Commands</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Task</th><th>Slurm</th><th>PBS Pro</th></tr></thead>
+    <tbody>
+      <tr><td>Submit</td><td><code>sbatch job.sbatch</code></td><td><code>qsub job.pbs</code></td></tr>
+      <tr><td>My jobs</td><td><code>squeue --me</code></td><td><code>qstat -u $USER</code></td></tr>
+      <tr><td>Array sub-jobs</td><td><code>squeue --me</code></td><td><code>qstat -t 123[]</code></td></tr>
+      <tr><td>Why is it waiting / details</td><td><code>scontrol show job 123</code></td><td><code>qstat -f 123</code></td></tr>
+      <tr><td>Finished job info</td><td><code>sacct -j 123</code></td><td><code>qstat -xf 123</code></td></tr>
+      <tr><td>Cancel</td><td><code>scancel 123</code></td><td><code>qdel 123</code></td></tr>
+      <tr><td>Hold / release</td><td><code>scontrol hold|release 123</code></td><td><code>qhold 123</code> / <code>qrls 123</code></td></tr>
+      <tr><td>Queues and limits</td><td><code>sinfo</code></td><td><code>qstat -Q</code>, <code>qstat -Qf smp</code></td></tr>
+      <tr><td>Interactive shell on a node</td><td><code>srun -c 4 --pty bash</code></td><td><code>qsub -I -P CBBI1234 -q serial -l select=1:ncpus=4 -l walltime=2:00:00</code></td></tr>
+    </tbody>
+  </table></div>
+  <h3>Job states</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>Slurm</th><th>PBS</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>PENDING</code></td><td><code>Q</code></td><td>waiting in the queue</td></tr>
+      <tr><td><code>RUNNING</code></td><td><code>R</code></td><td>running</td></tr>
+      <tr><td>–</td><td><code>B</code></td><td>array job with sub-jobs running</td></tr>
+      <tr><td><code>COMPLETED</code></td><td><code>F</code> (with <code>qstat -x</code>)</td><td>finished</td></tr>
+      <tr><td>held</td><td><code>H</code></td><td>held (e.g. waiting on a dependency)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 4 -->
+<section id="m4">
+  <div class="kicker">Module 4</div>
+  <h2>Lengau essentials</h2>
+  <div class="grid3">
+    <div class="panel"><b>Log in</b><p class="see" style="margin:6px 0 0"><code>ssh you@lengau.chpc.ac.za</code><br>The login node is shared: edit and submit, don’t compute.</p></div>
+    <div class="panel"><b>Project code</b><p class="see" style="margin:6px 0 0">Every job needs <code>-P</code> with your research programme code (from your CHPC allocation). No code → job refused.</p></div>
+    <div class="panel"><b>Software</b><p class="see" style="margin:6px 0 0"><code>module avail</code>, <code>module load chpc/BIOMODULES</code>, then e.g. <code>module avail gromacs</code>.</p></div>
+  </div>
+
+  <h3>Storage</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>Where</th><th>Use for</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td><code>/home/$USER</code></td><td>scripts, small files</td><td>small quota</td></tr>
+      <tr><td><code>/mnt/lustre/users/$USER</code></td><td><b>run jobs here</b>: inputs, trajectories, results</td><td>fast and large, <b>not backed up</b>, old files may be purged</td></tr>
+    </tbody>
+  </table></div>
+  <p>Copy results back to the lab cluster or your laptop when a project stage is done.</p>
+
+  <h3>Queues (guide – confirm with <code>qstat -Q</code>)</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>Queue</th><th>Typical use</th><th>Rough size / time</th></tr></thead>
+    <tbody>
+      <tr><td><code>serial</code></td><td>1 node, fewer than a full node of cores (docking tasks, analysis)</td><td>up to 23 cores · 48 h</td></tr>
+      <tr><td><code>seriallong</code></td><td>same, longer</td><td>up to 23 cores · 144 h</td></tr>
+      <tr><td><code>smp</code></td><td>one full node (e.g. single-node MD)</td><td>24 cores · 96 h</td></tr>
+      <tr><td><code>normal</code></td><td>multi-node MPI</td><td>25–240 cores · 48 h</td></tr>
+      <tr><td><code>large</code></td><td>big MPI runs</td><td>264+ cores · 96 h</td></tr>
+      <tr><td><code>bigmem</code></td><td>jobs needing ~1 TB memory</td><td>48 h</td></tr>
+      <tr><td><code>gpu_1</code> … <code>gpu_4</code></td><td>GPU MD, AlphaFold-type work</td><td>10 CPUs per GPU · 12 h</td></tr>
+      <tr><td><code>test</code></td><td>quick checks of a script</td><td>3 h</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout">Why this matters for us: the lab cluster has <b>no GPUs</b>. Develop and test on the lab cluster, then send the
+  heavy runs (long GPU MD, large screens) to CHPC with the same script, translated.</div>
+</section>
+
+<!-- 5 -->
+<section id="m5">
+  <div class="kicker">Module 5</div>
+  <h2>Worked conversions</h2>
+
+  <h3>1 · Docking array (from <code>01_docking</code>)</h3>
+  <div class="side">
+    <div><div class="lbl s">Slurm</div>
+<pre><span class="k">#SBATCH -J dock</span>
+<span class="k">#SBATCH --array=0-99</span>
+<span class="k">#SBATCH --mem=1G</span>
+<span class="k">#SBATCH -t 24:00:00</span>
+<span class="k">#SBATCH -o logs/%x_%A_%a.out</span>
+
+python prep_ligands.py input/lib.smi $tmp \
+  $SLURM_ARRAY_TASK_ID 100</pre></div>
+    <div><div class="lbl p">PBS Pro</div>
+<pre><span class="k">#PBS -N dock</span>
+<span class="k">#PBS -P CBBI1234</span>
+<span class="k">#PBS -q serial</span>
+<span class="k">#PBS -J 0-99</span>
+<span class="k">#PBS -l select=1:ncpus=1:mem=1gb</span>
+<span class="k">#PBS -l walltime=24:00:00</span>
+<span class="k">#PBS -j oe</span>
+
+cd $PBS_O_WORKDIR
+python prep_ligands.py input/lib.smi $tmp \
+  $PBS_ARRAY_INDEX 100</pre></div>
+  </div>
+  <p class="see">Submit with <code>qsub dock.pbs</code>; watch with <code>qstat -t 123[]</code>. The docking commands themselves don’t change.</p>
+
+  <h3>2 · Chained steps (prepare → run → collect)</h3>
+  <div class="side">
+    <div><div class="lbl s">Slurm</div>
+<pre>a=$(sbatch --parsable prep.sbatch)
+b=$(sbatch --parsable --dependency=afterok:$a run.sbatch)
+sbatch --dependency=afterany:$b collect.sbatch</pre></div>
+    <div><div class="lbl p">PBS Pro</div>
+<pre>a=$(qsub prep.pbs)
+b=$(qsub -W depend=afterok:$a run.pbs)
+qsub -W depend=afterany:$b collect.pbs</pre></div>
+  </div>
+  <p class="see"><code>qsub</code> already prints just the job ID, so no <code>--parsable</code>. For an array, depend on it with <code>afterok</code> using the <code>123[]</code> ID it prints.</p>
+
+  <h3>3 · GPU molecular dynamics</h3>
+<pre><span class="k">#PBS -N md-gpu</span>
+<span class="k">#PBS -P CBBI1234</span>
+<span class="k">#PBS -q gpu_1</span>
+<span class="k">#PBS -l select=1:ncpus=10:ngpus=1</span>
+<span class="k">#PBS -l walltime=12:00:00</span>
+<span class="k">#PBS -j oe</span>
+
+cd $PBS_O_WORKDIR
+module load chpc/BIOMODULES gromacs      <span class="c"># pick a GPU build: module avail gromacs</span>
+gmx mdrun -deffnm md -nb gpu -ntomp $NCPUS -cpi md.cpt   <span class="c"># -cpi: continue after the 12 h limit</span></pre>
+  <p class="see">Same restart idea as the lab <code>03_md</code> template: resubmit and it continues from the checkpoint.</p>
+</section>
+
+<!-- 6 -->
+<section id="m6">
+  <div class="kicker">Module 6</div>
+  <h2>Slurm → PBS converter</h2>
+  <p>Paste the <code>#SBATCH</code> lines from any lab template. You get a starting <code>#PBS</code> header – check the queue and limits before submitting.</p>
+  <div class="inp">
+    <label>Project code <input id="proj" value="CBBI1234" size="10"></label>
+    <label>Queue <input id="queue" value="serial" size="8"></label>
+  </div>
+  <div class="conv">
+    <textarea id="sl" spellcheck="false">#!/bin/bash
+#SBATCH -J esm
+#SBATCH -c 8
+#SBATCH --mem=8G
+#SBATCH -t 12:00:00
+#SBATCH --array=1-20
+#SBATCH -o logs/%x_%A_%a.out
+python esm_scan.py input/seqs.fasta $SLURM_ARRAY_TASK_ID model.pt</textarea>
+    <textarea id="pb" spellcheck="false" readonly></textarea>
+  </div>
+</section>
+
+<!-- 7 -->
+<section id="m7">
+  <div class="kicker">Module 7</div>
+  <h2>Pitfalls that cost people a day</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td>“file not found” for inputs that exist</td><td>PBS starts in your home folder</td><td>add <code>cd $PBS_O_WORKDIR</code></td></tr>
+      <tr><td><code>qsub</code> refuses the job</td><td>missing or wrong <code>-P</code>, or cores outside the queue’s range</td><td>check project code; match <code>ncpus</code> to the queue</td></tr>
+      <tr><td>Program uses 1 core though you asked for 24</td><td>threads not set</td><td>pass <code>$NCPUS</code> (e.g. <code>-ntomp $NCPUS</code>)</td></tr>
+      <tr><td>Job killed at exactly the time limit</td><td>walltime reached</td><td>raise walltime within the queue limit, or checkpoint + resubmit</td></tr>
+      <tr><td>Home quota full, jobs fail writing</td><td>running in <code>/home</code></td><td>run in <code>/mnt/lustre/users/$USER</code></td></tr>
+      <tr><td><code>module: command not found</code> in a job</td><td>non-login shell</td><td>start script with <code>#!/bin/bash</code>, or <code>source /etc/profile.d/modules.sh</code></td></tr>
+      <tr><td>Lab conda tools missing on CHPC</td><td>our <code>/shared/apps/sbio</code> only exists on the lab cluster</td><td>use CHPC modules, or unpack the same <code>sbio.tar.gz</code> into Lustre</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 8 -->
+<section id="m8">
+  <div class="kicker">Module 8</div>
+  <h2>Check yourself</h2>
+  <div class="quiz" id="quiz"></div>
+  <p id="score" class="see"></p>
+
+  <h3>Pocket cheat sheet</h3>
+<pre>qsub job.pbs            submit            qstat -u $USER     my jobs
+qdel 123                cancel            qstat -xf 123      finished job details
+qsub -I -P X -q serial -l select=1:ncpus=4 -l walltime=1:00:00   interactive
+#PBS -P X  -q Q  -l select=1:ncpus=C:mem=Mgb  -l walltime=HH:MM:SS  -J 1-N  -j oe
+cd $PBS_O_WORKDIR       $PBS_ARRAY_INDEX  $NCPUS  $PBS_JOBID</pre>
+</section>
+</main>
+</div>
+<button class="theme" id="theme" aria-label="Toggle light or dark theme">◐ Theme</button>
+
+<script>
+const $ = id => document.getElementById(id);
+$('theme').onclick = () => {
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  const cur = document.documentElement.dataset.theme || (dark ? 'dark' : 'light');
+  document.documentElement.dataset.theme = cur === 'dark' ? 'light' : 'dark';
+  try { localStorage.setItem('c101-theme', document.documentElement.dataset.theme); } catch (e) {}
+};
+try { const t = localStorage.getItem('c101-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+
+const links = [...document.querySelectorAll('aside a.m')];
+const obs = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id));
+}), {rootMargin: '-40% 0px -55% 0px'});
+document.querySelectorAll('section[id^=m]').forEach(s => obs.observe(s));
+
+/* Slurm -> PBS header converter */
+function toHours(t) {                       // Slurm time -> HH:MM:SS
+  let d = 0, rest = t;
+  if (t.includes('-')) { [d, rest] = t.split('-'); d = +d; }
+  const p = rest.split(':').map(Number);
+  let h = 0, m = 0, s = 0;
+  if (t.includes('-')) [h, m = 0, s = 0] = p;
+  else if (p.length === 3) [h, m, s] = p;
+  else if (p.length === 2) [m, s] = p;
+  else m = p[0];
+  h += d * 24 + Math.floor(m / 60); m %= 60;
+  return [h, m, s].map(v => String(v).padStart(2, '0')).join(':');
+}
+function toGb(m) {
+  const v = parseFloat(m), u = (m.match(/[KMGT]/i) || ['M'])[0].toUpperCase();
+  return Math.max(1, Math.ceil(v * {K: 1 / 1048576, M: 1 / 1024, G: 1, T: 1024}[u])) + 'gb';
+}
+function convert() {
+  const o = {nodes: 1, ntasks: null, tpn: null, cpt: 1, mem: null, notes: []};
+  const body = [];
+  const head = ['#!/bin/bash'];
+  for (const raw of $('sl').value.split('\n')) {
+    const line = raw.trim();
+    if (line.startsWith('#!')) continue;
+    if (!line.startsWith('#SBATCH')) { body.push(raw); continue; }
+    const m = line.replace('#SBATCH', '').trim().match(/^(--?[\w-]+)(?:[= ](.*))?$/);
+    if (!m) continue;
+    const [, k, v = ''] = m;
+    switch (k) {
+      case '-J': case '--job-name': head.push(`#PBS -N ${v}`); break;
+      case '-N': case '--nodes': o.nodes = +v; break;
+      case '-n': case '--ntasks': o.ntasks = +v; break;
+      case '--ntasks-per-node': o.tpn = +v; break;
+      case '-c': case '--cpus-per-task': o.cpt = +v; break;
+      case '--mem': o.mem = toGb(v); break;
+      case '--mem-per-cpu': o.memPerCpu = parseFloat(toGb(v)); break;
+      case '-t': case '--time': head.push(`#PBS -l walltime=${toHours(v)}`); break;
+      case '-a': case '--array': {
+        const [range, lim] = v.split('%');
+        head.push(`#PBS -J ${range}`);
+        if (lim) o.notes.push(`# array limit %${lim}: PBS may not support it – submit in smaller batches if needed`);
+        break; }
+      case '-o': case '--output': case '-e': case '--error':
+        head.push(`#PBS -j oe`); o.notes.push('# output name: PBS writes <name>.o<jobid> in the submit folder'); break;
+      case '--dependency': head.push(`#PBS -W depend=${v}`); break;
+      case '-p': case '--partition': break;
+      case '-w': case '--nodelist': o.notes.push(`# -w ${v}: CHPC picks nodes for you (removed)`); break;
+      case '--gres': { const g = (v.match(/gpu:(\d+)/) || [])[1]; if (g) { o.gpus = +g; o.notes.push(`# GPU job: use queue gpu_${g}, 10 CPUs per GPU`); } break; }
+      default: o.notes.push(`# not converted: ${k} ${v}`);
+    }
+  }
+  const tasksPerChunk = o.tpn || (o.ntasks ? Math.ceil(o.ntasks / o.nodes) : 1);
+  const ncpus = tasksPerChunk * o.cpt;
+  let sel = `select=${o.nodes}:ncpus=${ncpus}`;
+  if (tasksPerChunk > 1) sel += `:mpiprocs=${tasksPerChunk}`;
+  if (o.gpus) sel += `:ngpus=${o.gpus}`;
+  const mem = o.mem || (o.memPerCpu ? Math.ceil(o.memPerCpu * ncpus) + 'gb' : null);
+  if (mem) sel += `:mem=${mem}`;
+  head.splice(1, 0, `#PBS -P ${$('proj').value}`, `#PBS -q ${o.gpus ? 'gpu_' + o.gpus : $('queue').value}`, `#PBS -l ${sel}`);
+  const uniq = [...new Set(head)];
+  const text = body.join('\n')
+    .replace(/\$\{?SLURM_ARRAY_TASK_ID\}?/g, '$PBS_ARRAY_INDEX')
+    .replace(/\$\{?SLURM_CPUS_PER_TASK\}?/g, '$NCPUS')
+    .replace(/\$\{?SLURM_JOB_ID\}?/g, '$PBS_JOBID')
+    .replace(/\$\{?SLURM_SUBMIT_DIR\}?/g, '$PBS_O_WORKDIR');
+  $('pb').value = [...uniq, ...o.notes, '', 'cd $PBS_O_WORKDIR', text.replace(/^\n+/, '')].join('\n');
+}
+['sl', 'proj', 'queue'].forEach(id => $(id).addEventListener('input', convert));
+convert();
+
+/* quiz */
+const QUIZ = [
+  ['Your PBS job can’t find input files that are next to the script. Why?', ['PBS starts jobs in your home folder', 'The queue is wrong', 'Lustre is offline'], 0, 'Add cd $PBS_O_WORKDIR at the top of the script body.'],
+  ['Slurm “-N 2 --ntasks-per-node=24” becomes…', ['-l nodes=2:ppn=24', '-l select=2:ncpus=24:mpiprocs=24', '-J 2-24'], 1, 'PBS Pro asks for chunks: 2 chunks of 24 CPUs and 24 MPI ranks.'],
+  ['Which line is required on CHPC but has no lab equivalent?', ['#PBS -j oe', '#PBS -P <project>', '#PBS -N name'], 1, 'The project code decides whose allocation pays.'],
+  ['$SLURM_ARRAY_TASK_ID in PBS Pro is…', ['$PBS_ARRAY_ID', '$PBS_ARRAY_INDEX', '$PBS_TASKNUM'], 1, '$PBS_ARRAY_INDEX, with the array set by #PBS -J.'],
+  ['Where should a 50 GB trajectory be written on Lengau?', ['/home/$USER', '/mnt/lustre/users/$USER', '/tmp on the login node'], 1, 'Lustre is the large, fast work area (not backed up).'],
+  ['Cancel job 4567 on CHPC:', ['scancel 4567', 'qdel 4567', 'qstat -d 4567'], 1, 'qdel is PBS’s scancel.'],
+];
+let answered = 0, correct = 0;
+QUIZ.forEach(([q, opts, right, why], k) => {
+  const box = document.createElement('div'); box.className = 'panel'; box.style.marginBottom = '12px';
+  box.innerHTML = `<b>${k + 1}. ${q}</b>`;
+  const w = document.createElement('div'); w.className = 'why';
+  opts.forEach((o, i) => {
+    const b = document.createElement('button'); b.className = 'opt'; b.textContent = o;
+    b.onclick = () => {
+      if (box.dataset.done) return; box.dataset.done = 1; answered++;
+      if (i === right) { correct++; b.classList.add('right'); } else { b.classList.add('wrong'); box.querySelectorAll('.opt')[right].classList.add('right'); }
+      w.textContent = why;
+      $('score').textContent = `${correct} of ${answered} correct` + (answered === QUIZ.length && correct === QUIZ.length ? ' – ready for CHPC.' : '');
+    };
+    box.appendChild(b);
+  });
+  box.appendChild(w); $('quiz').appendChild(box);
+});
+</script>
+</body>
+</html>

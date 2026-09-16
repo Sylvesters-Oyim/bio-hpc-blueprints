@@ -31,7 +31,7 @@ Both give you the same thing at the end: **Slurm + shared folders**. Then add th
 - **Software** packed for offline use: AutoDock Vina, GROMACS, fpocket, US-align, ESM-2, RDKit, PyTorch (CPU)
 - **9 job templates** with example data: docking, pocket detection, MD, ESM mutation scan, FoldX, Rosetta, structure similarity, task farm
 - **Web portal**: see the cluster live, submit jobs by form, view tables, plots and 3D structures
-- **Cluster 101**: a one-page offline course with real results
+- **Cluster 101**: a one-page offline course with real results, plus **PBS 101** for moving jobs to CHPC
 
 ## Layout
 ```
@@ -50,6 +50,22 @@ platform/
 1. Choose a blueprint and follow its README until `sinfo` shows your nodes idle.
 2. Follow [`platform/README.md`](platform/README.md): software → portal.
 3. Open the portal, run **Hello cluster**, then **Docking** with the example data.
+
+## Moving jobs to CHPC (PBS Pro)
+The lab clusters use **Slurm**; CHPC Lengau uses **PBS Pro**. Develop on the lab cluster, then send heavy
+runs (GPU MD, large screens) to CHPC. [`platform/course/pbs101.html`](platform/course/pbs101.html) is a
+short course with side-by-side scripts, a Slurm → PBS header converter and Lengau tips.
+
+| | Slurm (lab) | PBS Pro (CHPC) |
+|---|---|---|
+| Submit / watch / cancel | `sbatch` · `squeue --me` · `scancel` | `qsub` · `qstat -u $USER` · `qdel` |
+| Resources | `-N 1 -c 24 --mem=60G -t 24:00:00` | `-l select=1:ncpus=24:mem=60gb -l walltime=24:00:00` |
+| Queue / project | `-p batch` | `-q smp -P <project code>` (project required) |
+| Array | `--array=1-100` → `$SLURM_ARRAY_TASK_ID` | `-J 1-100` → `$PBS_ARRAY_INDEX` |
+| Start folder | submit folder | home → add `cd $PBS_O_WORKDIR` |
+| Dependency | `--dependency=afterok:ID` | `-W depend=afterok:ID` |
+
+Queue names and limits change: check `qstat -Q` on Lengau and the CHPC wiki.
 
 ## Measured on the Croods example (44 CPU threads, no GPU)
 | Workload | Speed |

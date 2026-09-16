@@ -7,7 +7,7 @@ Everything **above** Slurm. Works on either blueprint once the cluster has a sha
 | `software/` | Vina, GROMACS, fpocket, US-align, ESM-2, RDKit, PyTorch (CPU)… packed for offline use | `bash build-env.sh` (PC with internet) → `bash install.sh admin@head-node` |
 | `templates/` | 9 ready-to-run workflows with example data | copied to `/shared/template` by the portal installer |
 | `portal/` | web UI: live cluster status, submit jobs by form, results with plots and 3D viewer | on the head node: `sudo bash install.sh` |
-| `course/` | "Cluster 101" — one offline HTML page, with real results from the example cluster | open `course/cluster101.html` |
+| `course/` | "Cluster 101" (real results from the example cluster) and "PBS 101" (Slurm → PBS for CHPC) — offline HTML | open `course/cluster101.html`, `course/pbs101.html` |
 | `internet/` | give an offline cluster temporary internet through a laptop | see below |
 
 ## Order

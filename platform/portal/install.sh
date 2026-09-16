@@ -8,7 +8,7 @@ cd "$(dirname "$0")"
 id portal >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbin/nologin portal
 rm -rf /opt/cluster-portal && mkdir -p /opt/cluster-portal
 cp -r app.py templates static /opt/cluster-portal/
-[ -f ../course/cluster101.html ] && cp ../course/cluster101.html /opt/cluster-portal/static/
+cp ../course/cluster101.html ../course/pbs101.html /opt/cluster-portal/static/ 2>/dev/null || true
 rm -rf /shared/template && cp -r ../templates /shared/template && chmod -R a+rX /shared/template
 
 install -m 644 cluster-portal.service /etc/systemd/system/

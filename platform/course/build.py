@@ -22,3 +22,8 @@ html = html.replace("/*DATA*/", json.dumps(data, separators=(",", ":")).replace(
 html = html.replace("<script>/*3DMOL*/</script>", "<script>" + open(sys.argv[2]).read().replace("</script", "<\\/script") + "</script>")
 open(f"{d}/cluster101.html", "w").write(html)
 print("cluster101.html", len(html) // 1024, "kB")
+
+# PBS course: same look, no data
+pbs = open(f"{d}/pbs101.src.html").read().replace("<!--STYLE-->", html[html.index("<style>"):html.index("</style>") + 8])
+open(f"{d}/pbs101.html", "w").write(pbs)
+print("pbs101.html", len(pbs) // 1024, "kB")
