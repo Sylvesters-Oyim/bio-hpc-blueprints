@@ -79,7 +79,7 @@ Queue names and limits change: check `qstat -Q` on Lengau and the CHPC wiki.
 - The portal listens on the head node's `localhost` only.
 
 ## Author
-Sylvesters Ochieng Oyim
+Sylvesters Ochieng Oyim — [sylvesters-oyim.github.io](https://sylvesters-oyim.github.io/)
 
 ## License
 [MIT](LICENSE)
