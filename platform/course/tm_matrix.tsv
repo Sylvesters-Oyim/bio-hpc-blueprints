@@ -1,0 +1,6 @@
+structure	gb1_nmr	gb1_xray	p53_core	trp_cage	ubiquitin
+gb1_nmr	1.000	0.860	0.396	0.314	0.513
+gb1_xray	0.860	1.000	0.399	0.391	0.498
+p53_core	0.396	0.399	1.000	0.327	0.387
+trp_cage	0.314	0.391	0.327	1.000	0.364
+ubiquitin	0.513	0.498	0.387	0.364	1.000

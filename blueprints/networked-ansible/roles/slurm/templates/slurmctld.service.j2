@@ -1,0 +1,19 @@
+[Unit]
+Description=Slurm controller daemon (slurmctld)
+After=network-online.target munge.service
+Wants=network-online.target
+Requires=munge.service
+
+[Service]
+Type=simple
+User={{ slurm_user }}
+Group={{ slurm_user }}
+ExecStart={{ slurm_prefix }}/sbin/slurmctld -D -s
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=131072
+LimitMEMLOCK=infinity
+
+[Install]
+WantedBy=multi-user.target

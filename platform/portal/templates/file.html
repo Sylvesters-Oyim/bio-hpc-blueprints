@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% block body %}
+<p><a href="/jobs/{{ name }}">← {{ name }}</a></p>
+<div class="row"><h1 style="word-break:break-all">{{ path }}</h1>
+<a class="btn ghost" style="margin-left:auto" href="/jobs/{{ name }}/file?path={{ path|urlencode }}">Download</a></div>
+{% if truncated %}<p class="muted">Large file: showing the last 400 kB.</p>{% endif %}
+{% if table %}<div class="panel scroll" style="max-height:75vh"><table>
+<thead><tr>{% for h in table[0] %}<th>{{ h }}</th>{% endfor %}</tr></thead><tbody>
+{% for row in table[1:] %}<tr>{% for c in row %}<td>{{ c }}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div>
+{% else %}<pre>{{ text }}</pre>{% endif %}{% endblock %}

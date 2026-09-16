@@ -1,0 +1,11 @@
+---
+- name: restart slurmctld
+  ansible.builtin.systemd:
+    name: slurmctld
+    state: restarted
+  when: inventory_hostname == control_machine
+
+- name: restart slurmd
+  ansible.builtin.systemd:
+    name: slurmd
+    state: restarted

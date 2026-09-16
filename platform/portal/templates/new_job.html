@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% block body %}
+<p><a href="/new">← workflows</a></p>
+<div style="display:grid;gap:20px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)" class="two">
+<form class="panel" method="post" enctype="multipart/form-data">
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<h1>Settings</h1>
+<label>Job name</label><input name="name" value="{{ default }}" required pattern="[A-Za-z0-9][A-Za-z0-9_.\-]*">
+{% for key, value, label in fields %}<label>{{ label or key }} <span class="muted">({{ key }})</span></label><input name="{{ key }}" value="{{ value }}">{% endfor %}
+<label>Input files (optional)</label><input type="file" name="files" multiple>
+<p class="muted" style="font-size:13px;margin:6px 0">Example inputs included: {{ inputs|join(', ') or 'none' }}.<br>
+If you upload files, the examples are removed unless you tick:</p>
+<label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="keep_examples" style="width:auto"> keep example files too</label>
+<p style="margin-top:18px"><button class="btn">Submit job</button></p></form>
+<div class="panel"><pre style="white-space:pre-wrap;border:0;background:none;padding:0;font-family:inherit;font-size:14px;max-height:none">{{ readme }}</pre></div>
+</div>
+<style>@media(max-width:800px){.two{grid-template-columns:1fr!important}}</style>
+{% endblock %}

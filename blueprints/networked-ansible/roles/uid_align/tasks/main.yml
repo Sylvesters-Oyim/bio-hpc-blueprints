@@ -1,0 +1,63 @@
+---
+# Safety first: a second admin with the same SSH key, in case the UID change goes wrong.
+- name: (safety) Create spare admin
+  ansible.builtin.user:
+    name: "{{ breakglass_user }}"
+    uid: 1500
+    shell: /bin/bash
+    groups: sudo
+    append: true
+  tags: ['safety']
+
+- name: (safety) Passwordless sudo for spare admin
+  ansible.builtin.copy:
+    dest: "/etc/sudoers.d/91-{{ breakglass_user }}"
+    content: "{{ breakglass_user }} ALL=(ALL) NOPASSWD:ALL\n"
+    mode: "0440"
+    validate: "visudo -cf %s"
+  tags: ['safety']
+
+- name: (safety) Spare admin .ssh folder
+  ansible.builtin.file:
+    path: "/home/{{ breakglass_user }}/.ssh"
+    state: directory
+    owner: "{{ breakglass_user }}"
+    group: "{{ breakglass_user }}"
+    mode: "0700"
+  tags: ['safety']
+
+- name: (safety) Copy the admin's working SSH key to the spare admin
+  ansible.builtin.copy:
+    src: "/home/{{ admin_user }}/.ssh/authorized_keys"
+    remote_src: true
+    dest: "/home/{{ breakglass_user }}/.ssh/authorized_keys"
+    owner: "{{ breakglass_user }}"
+    group: "{{ breakglass_user }}"
+    mode: "0600"
+  tags: ['safety']
+
+# Align the admin UID/GID.
+- name: (uid) Read current UID
+  ansible.builtin.command: "id -u {{ admin_user }}"
+  register: cur_uid
+  changed_when: false
+  tags: ['uid']
+
+- name: (uid) Change GID and UID
+  ansible.builtin.shell: |
+    groupmod -g {{ target_admin_gid }} {{ admin_user }}
+    usermod -u {{ target_admin_uid }} {{ admin_user }}
+  when: cur_uid.stdout != target_admin_uid | string
+  tags: ['uid']
+
+- name: (uid) Re-own files still owned by the old UID (outside home)
+  ansible.builtin.shell: >
+    find / -xdev \( -path /proc -o -path /sys \) -prune -o
+    -uid {{ cur_uid.stdout }} -exec chown {{ target_admin_uid }}:{{ target_admin_gid }} {} +
+  when: cur_uid.stdout != target_admin_uid | string
+  tags: ['uid']
+
+- name: (uid) Show result
+  ansible.builtin.command: "id {{ admin_user }}"
+  changed_when: false
+  tags: ['uid']

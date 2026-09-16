@@ -1,0 +1,49 @@
+{% extends "base.html" %}{% block body %}
+<p><a href="/jobs">← my jobs</a></p>
+<div class="row"><h1>{{ name }}</h1>
+<span style="margin-left:auto" class="row">
+<a class="btn ghost" href="/jobs/{{ name }}">Refresh</a>
+<a class="btn ghost" href="/jobs/{{ name }}/zip">Download all</a>
+<form method="post" action="/jobs/{{ name }}/resubmit"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn ghost">Resubmit</button></form>
+<form method="post" action="/jobs/{{ name }}/cancel"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn danger">Cancel</button></form>
+<form method="post" action="/jobs/{{ name }}/delete" onsubmit="return confirm('Delete {{ name }} and all its files?')"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn danger">Delete</button></form>
+</span></div>
+<p class="sub">~/jobs/{{ name }}</p>
+
+<h2>Slurm</h2>
+<div class="panel scroll">{% if queue %}<table><thead><tr><th>Job</th><th>Step</th><th>State</th><th>Time</th><th>Node / reason</th></tr></thead><tbody>
+{% for j in queue %}<tr><td>{{ j.id }}</td><td>{{ j.name }}</td><td><span class="chip {{ j.state }}">{{ j.state }}</span></td><td>{{ j.time }}</td><td>{{ j.where }}</td></tr>{% endfor %}
+</tbody></table>{% else %}<span class="muted">Nothing queued or running for this job.</span>{% endif %}</div>
+
+{% set res = files.results %}
+{% set pngs = res|selectattr('ext', 'equalto', '.png')|list %}
+{% if pngs %}<h2>Plots</h2><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(420px,1fr))">
+{% for f in pngs %}<div class="panel plot"><div class="muted" style="font-size:13px">{{ f.path }}</div><img loading="lazy" src="/jobs/{{ name }}/file?raw=1&path={{ f.path|urlencode }}"></div>{% endfor %}</div>{% endif %}
+
+{% for group in ['results', 'logs', 'input'] %}
+<h2>{{ group|capitalize }}</h2><div class="panel scroll files"><table><tbody>
+{% for f in files[group] %}<tr><td>{% if f.ext in TEXT_EXT %}<a href="/jobs/{{ name }}/file?view=1&path={{ f.path|urlencode }}">{{ f.path }}</a>{% else %}{{ f.path }}{% endif %}</td>
+<td class="num muted">{{ (f.size/1024)|round(1) }} kB</td>
+<td>{% if f.ext in MOL_EXT %}<a href="#viewer" onclick="show3d('{{ f.path }}')">3D</a> · {% endif %}<a href="/jobs/{{ name }}/file?path={{ f.path|urlencode }}">download</a></td></tr>
+{% else %}<tr><td class="muted">empty</td></tr>{% endfor %}</tbody></table></div>
+{% if group == 'results' %}<div id="viewer" class="viewer" style="display:none;margin-top:12px"></div>{% endif %}
+{% endfor %}
+
+<h2>Settings</h2><div class="panel"><table><tbody>{% for k, v, label in settings %}<tr><td class="muted">{{ label or k }}</td><td><code>{{ v }}</code></td></tr>{% endfor %}</tbody></table></div>
+
+<script src="{{ url_for('static', filename='3Dmol-min.js') }}"></script>
+<script>
+let viewer;
+async function show3d(path) {
+  const el = document.getElementById('viewer'); el.style.display = 'block';
+  const txt = await (await fetch('/jobs/{{ name }}/file?raw=1&path=' + encodeURIComponent(path))).text();
+  const fmt = path.split('.').pop().replace('pdbqt', 'pdb').replace('pqr', 'pqr');
+  if (!viewer) viewer = $3Dmol.createViewer(el, {backgroundColor: getComputedStyle(document.body).backgroundColor});
+  viewer.clear(); viewer.addModelsAsFrames(txt, fmt);
+  viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
+  viewer.setStyle({hetflag: true}, {stick: {colorscheme: 'greenCarbon'}});
+  if (!txt.includes(' CA ')) viewer.setStyle({}, {stick: {colorscheme: 'greenCarbon'}});
+  viewer.zoomTo(); viewer.render();
+  if (viewer.getNumFrames() > 1) viewer.animate({loop: 'forward', interval: 400});
+}
+</script>{% endblock %}

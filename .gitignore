@@ -1,15 +1,19 @@
-# macOS
-.DS_Store
-.AppleDouble
-.Spotlight-V100
-.Trashes
+# Secrets and big build outputs never go in git
+secrets/
+*.iso
+*.tar.gz
+platform/software/out/
 
-# Ansible
+# Job outputs inside templates
+platform/templates/*/results/
+platform/templates/*/logs/
+
+# Ansible / editors
 *.retry
 *.log
-
-# Editor / misc
+__pycache__/
 *~
 *.swp
 .vscode/
 .idea/
+.DS_Store

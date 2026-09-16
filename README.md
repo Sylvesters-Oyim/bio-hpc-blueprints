@@ -1,151 +1,69 @@
-# BioLab Cluster
+# bio-hpc-blueprints
 
-**Infrastructure-as-code for the BioLab Slurm cluster.** The playbook *is* the
-documentation: run it and you get a working Slurm cluster; read it and you know
-exactly how it was built.
+**Build a small HPC cluster for structural bioinformatics from ordinary PCs — and make it easy for a lab to use.**
 
-![Ansible](https://img.shields.io/badge/Ansible-playbook-EE0000?logo=ansible&logoColor=white)
-![Slurm](https://img.shields.io/badge/Slurm-24.11.5-2C6FBB)
-![Apptainer](https://img.shields.io/badge/Apptainer-HPC-1D3557)
+Two working blueprints and one shared platform, each taken from a real cluster and made generic so you
+can copy the pattern. Scripts are short on purpose: read them top to bottom and you know what they do.
+
+![Slurm](https://img.shields.io/badge/Slurm-scheduler-2C6FBB)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04-E95420?logo=ubuntu&logoColor=white)
+![Ansible](https://img.shields.io/badge/Ansible-playbook-EE0000?logo=ansible&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-> **Guiding principle — own the science, rent the plumbing.** Scheduling,
-> orchestration and containers are solved problems, so we adopt standard tools
-> (Slurm, Apptainer, Nextflow) instead of rebuilding worse versions. The
-> playbook is the runbook, the reproducibility proof, and the home-lab replay
-> button — there is no second "write it up" pass.
+## Pick a blueprint
 
----
-
-## What this builds
-
-A small, reproducible HPC cluster for **pipeline development and CPU-bound
-bioinformatics** (production GPU molecular dynamics runs on CHPC Lengau — same
-Slurm + Apptainer interface, so pipelines move unchanged).
-
-```
-  You
-   │  ansible-playbook site.yml
-   ▼
-  Slurm  ──────►  Apptainer          ← scheduler + rootless container runtime (HPC standard)
-   │
-   ▼
-  biolab core library (plain Python) ← the biology: variants, structures, RINs, CRT
-   │
-   ▼
-  Scientific outputs
-```
-
-Munge provides the shared-secret auth Slurm daemons use to trust each other;
-NFS (`/srv/biolab/shared`) is the single source of truth for containers,
-modules, workflows and reference data.
-
-## The cluster
-
-| | Jaguar (controller) | Lynx (compute) |
+| | [A — Penguins 🐧](blueprints/networked-ansible) | [B — Croods 🪨](blueprints/offline-usb) |
 |---|---|---|
-| Role | head / login / `slurmctld` + compute | compute (`slurmd`) |
-| OS | Ubuntu Server 24.04 LTS | Ubuntu (26.04) |
-| CPU | Intel i7-12700 — 20 logical | 20 logical |
-| Tailscale IPv4 | `100.71.55.41` | `100.121.100.74` |
-| Admin user | `clusteradmin` (UID aligned to 1001) | `clusteradmin` |
+| Starting point | PCs already running Ubuntu | bare PCs (disks get wiped) |
+| Network | LAN or VPN (e.g. Tailscale), internet available | private switch, **no internet** |
+| Tool | Ansible, run from the controller | one USB stick, unattended install menu |
+| Example | 2 nodes: `skipper`, `kowalski` | 6 machines: `grug`, `gran`, `eep`, `ugga`, `thunk`, `guy` |
+| Shared storage, backups, cgroup limits | ⏳ not done yet | ✅ |
+| Status | foundation done (munge + Slurm) | ✅ complete, in use |
 
-Slurm is **built from one pinned source version on every node** (24.11.5) — the
-controller and compute node run different Ubuntu releases, and Slurm forbids a
-compute node newer than its controller, so distro packages won't do.
+Node names follow a theme per cluster — the Penguins of Madagascar and The Croods — which makes
+machines easy to tell apart and label.
 
-## Repository layout
+Both give you the same thing at the end: **Slurm + shared folders**. Then add the platform.
 
+## The platform (works on either)
+[`platform/`](platform) — what makes the cluster useful to biologists:
+- **Software** packed for offline use: AutoDock Vina, GROMACS, fpocket, US-align, ESM-2, RDKit, PyTorch (CPU)
+- **9 job templates** with example data: docking, pocket detection, MD, ESM mutation scan, FoldX, Rosetta, structure similarity, task farm
+- **Web portal**: see the cluster live, submit jobs by form, view tables, plots and 3D structures
+- **Cluster 101**: a one-page offline course with real results
+
+## Layout
 ```
-biolab-cluster/
-├── ansible.cfg
-├── site.yml                     # master playbook (run role-by-role via --tags)
-├── inventory/
-│   └── hosts.ini                # controller + compute nodes and their specs
-├── group_vars/
-│   └── all.yml                  # pinned Slurm version, cluster name, UID policy
-├── roles/
-│   ├── uid_align/               # break-glass admin + align clusteradmin UID
-│   ├── munge/                   # install + shared key + service
-│   └── slurm/                   # source-build Slurm, config, systemd units, services
-│       └── templates/           # slurm.conf.j2, slurmctld/slurmd .service.j2
-└── docs/
-    ├── BioLab_Cluster_Manual.md   # bare metal → working Slurm/Apptainer/NFS cluster
-    └── BioLab_Platform_Manual.md  # the software platform above the cluster
-```
-
-## Prerequisites
-
-Run from **Jaguar** (it has passwordless key + sudo into itself and Lynx):
-
-```bash
-cd biolab-cluster
-sudo apt install -y ansible
-ansible-galaxy collection install community.general ansible.posix
+blueprints/
+  networked-ansible/   A — Penguins: Ansible playbook (uid, munge, slurm)
+  offline-usb/         B — Croods: cluster.env → build.sh → USB → install every machine
+platform/
+  software/            build + install the science environment
+  templates/           00_hello … 08_task_farm
+  portal/              web UI
+  course/              Cluster 101
+  internet/            temporary internet through a laptop
 ```
 
-## Quickstart — run role-by-role, verify at each checkpoint
+## Quick start
+1. Choose a blueprint and follow its README until `sinfo` shows your nodes idle.
+2. Follow [`platform/README.md`](platform/README.md): software → portal.
+3. Open the portal, run **Hello cluster**, then **Docking** with the example data.
 
-> Do **not** run everything at once the first time. Each step has a green light
-> you must see before moving on.
+## Measured on the Croods example (44 CPU threads, no GPU)
+| Workload | Speed |
+|---|---|
+| GROMACS MD, 19 000 atoms, one 20-thread node | ~80 ns/day |
+| Vina docking, exhaustiveness 8 | ~1–5 min per ligand per thread, 44 at once |
+| ESM-2 650M full mutation scan, 76 residues | ~2 min |
 
-```bash
-# 1. Safety net FIRST: a break-glass admin so the UID change can't lock you out
-ansible-playbook site.yml --tags safety
-ssh biolabadmin@lynx 'sudo -n true && echo BREAK-GLASS-WORKS'   # must print this
-
-# 2. Align clusteradmin UID across nodes (the one risky step; the net above protects it)
-ansible-playbook site.yml --tags uid
-ssh clusteradmin@lynx 'id'                                      # must show uid=1001
-
-# 3. Munge shared-secret auth
-ansible-playbook site.yml --tags munge
-ssh clusteradmin@jaguar 'munge -n | ssh lynx unmunge | grep STATUS'   # Success
-
-# 4. Build + start Slurm (slow: compiles from source, a few min per node)
-ansible-playbook site.yml --tags slurm
-```
-
-## The milestone — cluster is UP when this works
-
-```bash
-sinfo                 # both nodes idle
-srun -N2 hostname     # prints: jaguar  and  lynx
-```
-
-Green here means the whole foundation — controller, compute node, scheduler,
-munge auth and shared storage — is validated.
-
-## Adding a node later (including GPU)
-
-1. Add one line under `[compute]` in `inventory/hosts.ini` with its `node_addr`,
-   `slurm_cpus`, `slurm_realmem` (for a GPU box also add `slurm_gres=gpu:1`).
-2. Ensure Jaguar has passwordless key + sudo into it (same bootstrap as Lynx).
-3. GPU only: install the NVIDIA driver on that box and uncomment `GresTypes=gpu`
-   in `roles/slurm/templates/slurm.conf.j2`.
-4. Re-run `ansible-playbook site.yml`. No rebuild of existing nodes.
-
-## Documentation
-
-- **[docs/BioLab_Cluster_Manual.md](docs/BioLab_Cluster_Manual.md)** — the full
-  build & operations manual: bare metal → working Slurm + Apptainer + NFS.
-- **[docs/BioLab_Platform_Manual.md](docs/BioLab_Platform_Manual.md)** — the
-  software platform above the cluster: containers, workflows, modules, provenance.
-
-## Notes on this repository
-
-Assembled from the working configuration into the canonical Ansible layout the
-manuals describe. Three small files were **added during assembly** because the
-roles referenced them but they weren't in the original set — each is marked with
-a `NOTE:` header: `roles/munge/handlers/main.yml`,
-`roles/slurm/handlers/main.yml`, and the `slurmctld/slurmd` systemd unit
-templates. Review the systemd units before production use.
+## Security notes
+- Secrets (munge key, admin SSH key, passwords) are generated at build time into `~/hpc-usb-build/secrets` and are **never** committed.
+- The portal listens on the head node's `localhost` only.
 
 ## Author
-
-**Sylvesters Ochieng Oyim** — Rhodes University
+Sylvesters Ochieng Oyim
 
 ## License
-
-Released under the [MIT License](LICENSE).
+[MIT](LICENSE)

@@ -1,0 +1,13 @@
+---
+# Run one tag at a time and check before moving on (see README):
+#   ansible-playbook site.yml --tags safety   # spare admin (lockout insurance)
+#   ansible-playbook site.yml --tags uid      # same admin UID everywhere
+#   ansible-playbook site.yml --tags munge    # shared key so Slurm daemons trust each other
+#   ansible-playbook site.yml --tags slurm    # build, configure, start Slurm
+- name: Cluster foundation
+  hosts: cluster
+  gather_facts: true
+  roles:
+    - { role: uid_align, tags: ['safety', 'uid'] }
+    - { role: munge,     tags: ['munge'] }
+    - { role: slurm,     tags: ['slurm'] }

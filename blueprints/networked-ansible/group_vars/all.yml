@@ -1,0 +1,22 @@
+---
+# Same Slurm version on every node: Slurm refuses a compute node newer than its controller,
+# and different Ubuntu releases ship different versions, so we build from source.
+slurm_version: "24.11.5"
+slurm_prefix: "/opt/slurm/{{ slurm_version }}"
+slurm_tarball_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
+
+cluster_name: "penguins"
+control_machine: "skipper"
+
+# Jobs run under the submitter's UID, and NFS trusts UID numbers, so the admin UID must match everywhere.
+admin_user: "clusteradmin"
+target_admin_uid: 1001
+target_admin_gid: 1001
+
+# Spare admin account, created before the UID change so a mistake can't lock you out.
+breakglass_user: "breakglass"
+
+# The slurm service account must also have the same UID everywhere.
+slurm_user: "slurm"
+slurm_uid: 981
+slurm_gid: 981

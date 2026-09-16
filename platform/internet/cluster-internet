@@ -1,0 +1,39 @@
+#!/bin/bash
+# sudo cluster-internet on|off|status   (run on the head node)
+# Routes every machine's internet through a laptop on the switch that shares its Wi-Fi.
+# Temporary on purpose: a reboot puts the cluster back offline.
+set -u
+source /etc/cluster.env
+GW=$SUBNET_PREFIX.250          # the laptop
+[ "$(id -u)" = 0 ] || { echo "run with sudo"; exit 1; }
+
+local_apply() {                # on|off, this machine only
+    dev=$(ip -o -4 addr show | awk -v p=" $SUBNET_PREFIX." 'index($0, p){print $2; exit}')
+    if [ "$1" = on ]; then
+        ip route replace default via "$GW" dev "$dev" metric 900     # high metric: never beats a real route
+        resolvectl dns "$dev" "$GW" && resolvectl domain "$dev" '~.' && resolvectl default-route "$dev" yes
+    else
+        ip route del default via "$GW" 2>/dev/null
+        resolvectl revert "$dev"
+    fi
+}
+
+case "${1:-status}" in
+local) local_apply "$2" ;;
+on|off)
+    [ "$1" = off ] || ping -c1 -W2 "$GW" >/dev/null || { echo "Laptop $GW not reachable: plug it in and share first"; exit 1; }
+    while read -r h ip role _; do
+        [ -z "$h" ] && continue
+        printf '%-8s ' "$h"
+        if [ "$role" = head ]; then
+            local_apply "$1" && echo "$1"
+        else   # same script is installed on every node
+            sudo -u "$ADMIN_USER" ssh -n -o BatchMode=yes -o ConnectTimeout=5 "$h" "sudo cluster-internet local $1" >/dev/null 2>&1 \
+                && echo "$1" || echo "unreachable"
+        fi
+    done <<< "$NODES" ;;
+status)
+    ip route | grep -q "default via $GW" && timeout 5 getent hosts github.com >/dev/null \
+        && echo "Internet: ON (via $GW)" || echo "Internet: OFF" ;;
+*) echo "usage: sudo cluster-internet on|off|status"; exit 1 ;;
+esac

@@ -1,0 +1,22 @@
+; 100 ps, restrained, velocities generated
+integrator           = md
+nsteps               = 50000
+define               = -DPOSRES
+continuation         = no
+gen_vel              = yes
+gen_temp             = @TEMP@
+dt                   = 0.002
+constraints          = h-bonds
+constraint_algorithm = lincs
+cutoff-scheme        = Verlet
+coulombtype          = PME
+rcoulomb             = 1.0
+rvdw                 = 1.0
+DispCorr             = EnerPres
+tcoupl               = V-rescale
+tc-grps              = Protein Non-Protein
+tau_t                = 0.1 0.1
+ref_t                = @TEMP@ @TEMP@
+pbc                  = xyz
+nstenergy            = 5000
+nstlog               = 5000

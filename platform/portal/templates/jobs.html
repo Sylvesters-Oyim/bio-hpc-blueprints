@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block body %}
+<div class="row"><h1>My jobs</h1><a class="btn" style="margin-left:auto" href="/new">New job</a></div>
+<p class="sub">Job folders in <code>~/jobs</code></p>
+<div class="panel scroll"><table><thead><tr><th>Name</th><th>Status</th><th>Created</th><th class="num">Result files</th></tr></thead><tbody>
+{% for r in rows %}<tr><td><a href="/jobs/{{ r.name }}">{{ r.name }}</a></td><td><span class="chip {{ r.status }}">{{ r.status }}</span></td><td>{{ r.mtime }}</td><td class="num">{{ r.results }}</td></tr>
+{% else %}<tr><td colspan="4" class="muted">No jobs yet. <a href="/new">Start one</a>.</td></tr>{% endfor %}
+</tbody></table></div>{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}{% block body %}
+<h1>Cluster</h1><p class="sub">Live status · refreshes every 10 s</p>
+<div class="panel stats" id="stats"></div>
+<h2>Nodes</h2><div class="grid" id="nodes"></div>
+<h2>Queue</h2><div class="panel scroll"><table><thead><tr><th>Job</th><th>User</th><th>Name</th><th>State</th><th>Time</th><th>Limit</th><th class="num">CPUs</th><th>Node / reason</th></tr></thead><tbody id="queue"></tbody></table></div>
+<script>
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function refresh() {
+  const r = await fetch('/api/status'); if (!r.ok) return location.reload();
+  const d = await r.json(), up = d.nodes.filter(n => !/down|inval|drain|unk/.test(n.state));
+  const tot = up.reduce((a, n) => a + n.total, 0), used = up.reduce((a, n) => a + n.alloc, 0);
+  const mem = up.reduce((a, n) => a + n.mem, 0);
+  document.getElementById('stats').innerHTML =
+    `<div class="stat"><b>${used} / ${tot}</b><span>CPU threads in use</span></div>
+     <div class="stat"><b>${up.length}</b><span>compute nodes up</span></div>
+     <div class="stat"><b>${(mem/1024).toFixed(0)} GB</b><span>memory for jobs</span></div>
+     <div class="stat"><b>${d.queue.filter(j => j.state == 'RUNNING').length}</b><span>jobs running</span></div>
+     <div class="stat"><b>${d.queue.filter(j => j.state == 'PENDING').length}</b><span>jobs waiting</span></div>`;
+  document.getElementById('nodes').innerHTML = d.nodes.map(n => `<div class="panel node">
+    <div class="row"><h3>${esc(n.name)}</h3><span class="chip ${esc(n.state.replace(/[*~#]/g,''))}">${esc(n.state)}</span></div>
+    <div class="cells">${Array.from({length: n.total}, (_, i) => `<b class="${i < n.alloc ? 'on' : ''}"></b>`).join('')}</div>
+    <div class="meta">${n.alloc}/${n.total} CPUs · ${(n.mem/1024).toFixed(1)} GB · load ${esc(n.load)}</div></div>`).join('');
+  document.getElementById('queue').innerHTML = d.queue.length ? d.queue.map(j => `<tr><td>${esc(j.id)}</td><td>${esc(j.user)}</td><td>${esc(j.name)}</td>
+    <td><span class="chip ${esc(j.state)}">${esc(j.state)}</span></td><td>${esc(j.time)}</td><td>${esc(j.limit)}</td><td class="num">${esc(j.cpus)}</td><td>${esc(j.where)}</td></tr>`).join('')
+    : '<tr><td colspan="8" class="muted">No jobs – the cluster is free.</td></tr>';
+}
+refresh(); setInterval(refresh, 10000);
+</script>{% endblock %}

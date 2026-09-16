@@ -1,0 +1,131 @@
+---
+# Build one pinned Slurm version from source on every node, then configure and start it.
+
+- name: Install build dependencies
+  ansible.builtin.apt:
+    name:
+      - build-essential
+      - wget
+      - bzip2
+      - libmunge-dev
+      - libssl-dev
+      - libpam0g-dev
+      - libjson-c-dev
+      - libyaml-dev
+      - libhwloc-dev
+      - libreadline-dev
+      - python3
+    state: present
+    update_cache: true
+
+- name: Create slurm group (same GID on all nodes)
+  ansible.builtin.group:
+    name: "{{ slurm_user }}"
+    gid: "{{ slurm_gid }}"
+    system: true
+
+- name: Create slurm user
+  ansible.builtin.user:
+    name: "{{ slurm_user }}"
+    uid: "{{ slurm_uid }}"
+    group: "{{ slurm_user }}"
+    system: true
+    shell: /usr/sbin/nologin
+    create_home: false
+
+- name: Check whether Slurm is already built
+  ansible.builtin.stat:
+    path: "{{ slurm_prefix }}/sbin/slurmctld"
+  register: slurm_built
+
+# Build (skipped when already installed)
+- name: Download Slurm source
+  ansible.builtin.get_url:
+    url: "{{ slurm_tarball_url }}"
+    dest: "/tmp/slurm-{{ slurm_version }}.tar.bz2"
+    mode: "0644"
+  when: not slurm_built.stat.exists
+
+- name: Extract Slurm source
+  ansible.builtin.unarchive:
+    src: "/tmp/slurm-{{ slurm_version }}.tar.bz2"
+    dest: /tmp
+    remote_src: true
+    creates: "/tmp/slurm-{{ slurm_version }}/configure"
+  when: not slurm_built.stat.exists
+
+- name: Configure Slurm build
+  ansible.builtin.command:
+    cmd: "./configure --prefix={{ slurm_prefix }} --sysconfdir=/etc/slurm --with-munge"
+    chdir: "/tmp/slurm-{{ slurm_version }}"
+  when: not slurm_built.stat.exists
+
+- name: Compile Slurm (slow, a few minutes per node)
+  community.general.make:
+    chdir: "/tmp/slurm-{{ slurm_version }}"
+    jobs: "{{ ansible_processor_vcpus | default(4) }}"
+  when: not slurm_built.stat.exists
+
+- name: Install Slurm
+  community.general.make:
+    chdir: "/tmp/slurm-{{ slurm_version }}"
+    target: install
+  when: not slurm_built.stat.exists
+
+- name: Create Slurm runtime directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: "0755"
+  loop:
+    - { path: /etc/slurm,            owner: root }
+    - { path: /var/log/slurm,        owner: "{{ slurm_user }}" }
+    - { path: /var/spool/slurmctld,  owner: "{{ slurm_user }}" }
+    - { path: /var/spool/slurmd,     owner: root }
+
+- name: Put Slurm binaries on everyone's PATH
+  ansible.builtin.copy:
+    dest: /etc/profile.d/slurm.sh
+    content: "export PATH={{ slurm_prefix }}/bin:{{ slurm_prefix }}/sbin:$PATH\n"
+    mode: "0644"
+
+- name: Write slurm.conf (identical on every node)
+  ansible.builtin.template:
+    src: slurm.conf.j2
+    dest: /etc/slurm/slurm.conf
+    mode: "0644"
+  notify:
+    - restart slurmctld
+    - restart slurmd
+
+- name: Install systemd unit for slurmctld (controller only)
+  ansible.builtin.template:
+    src: slurmctld.service.j2
+    dest: /etc/systemd/system/slurmctld.service
+    mode: "0644"
+  when: inventory_hostname == control_machine
+
+- name: Install systemd unit for slurmd (all nodes)
+  ansible.builtin.template:
+    src: slurmd.service.j2
+    dest: /etc/systemd/system/slurmd.service
+    mode: "0644"
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable + start slurmctld (controller only)
+  ansible.builtin.systemd:
+    name: slurmctld
+    enabled: true
+    state: started
+  when: inventory_hostname == control_machine
+
+- name: Enable + start slurmd (all nodes)
+  ansible.builtin.systemd:
+    name: slurmd
+    enabled: true
+    state: started

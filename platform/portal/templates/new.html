@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block body %}
+<h1>New job</h1><p class="sub">Pick a workflow. Each comes with example data, so you can try it straight away.</p>
+<div class="grid">{% for t in templates %}
+<a class="panel card" href="/new/{{ t.id }}"><span class="muted" style="font-size:12px">{{ t.id[:2] }}</span>
+<span class="t">{{ t.title }}</span><span class="muted">{{ t.blurb }}</span>
+{% if t.needs %}<span class="chip" style="color:var(--warn);align-self:flex-start">licence needed</span>{% endif %}</a>
+{% endfor %}</div>{% endblock %}

@@ -1,0 +1,16 @@
+[Unit]
+Description=Cluster Portal (web UI on localhost:8080)
+After=network-online.target slurmctld.service
+
+[Service]
+User=portal
+WorkingDirectory=/opt/cluster-portal
+ExecStart=/shared/apps/sbio/bin/python app.py
+Restart=always
+# Hardening: the portal itself can't write the system or gain privileges
+NoNewPrivileges=yes
+ProtectSystem=strict
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

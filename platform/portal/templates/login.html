@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block body %}
+<div class="panel" style="max-width:380px;margin:60px auto">
+<h1>Log in</h1><p class="sub">Use your cluster account (same as SSH).</p>
+<form method="post"><label>Username</label><input name="user" autofocus autocomplete="username">
+<label>Password</label><input name="password" type="password" autocomplete="current-password">
+<p><button class="btn" style="width:100%">Log in</button></p></form>
+<p class="muted" style="font-size:13px">No account? An admin runs <code>sudo cluster-add-user NAME</code> on the head node.</p></div>
+{% endblock %}
